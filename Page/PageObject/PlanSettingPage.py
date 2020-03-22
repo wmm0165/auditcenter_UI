@@ -29,7 +29,8 @@ class PlanSettingPage(BasePage):
 
     def search_plan(self, planname):
         # 输入方案名称
-        self.send_keys('css selector', 'input.audit-setting-search-input', planname)
+        if planname is not None:
+            self.send_keys('css selector', 'input.audit-setting-search-input', planname)
         # 点击搜索
         self.click('css selector', '.ip-btn>span:nth-of-type(2)')
 
@@ -56,9 +57,12 @@ class PlanSettingPage(BasePage):
     def get_database_data(self, planname):
         db = ConnectDB()
         cur = db.connect().cursor(pymysql.cursors.DictCursor)
-        plan_name = 'where name = %s'  # SELECT name, category,user_name,created_time,modified_time
-        cur.execute('SELECT name, category,user_name FROM `sf_audit_plan`' + plan_name,
-                    planname)
+        plan_name = 'and name like "%%%s%%"'  # SELECT name, category,user_name,created_time,modified_time
+        sql = 'SELECT name, category,user_name FROM `sf_audit_plan` where 1 = 1 '
+        if planname is not None:
+            sql = (sql +plan_name)%planname
+        cur.execute(sql)
+        print(sql)
         database_data = cur.fetchall()
         return database_data
 

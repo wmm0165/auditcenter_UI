@@ -14,12 +14,6 @@ class PlanSettingPage(BasePage):
     save_btn = do_conf.get_locators_or_account('PlanSettingPageElements', 'save_btn')
     planname = do_conf.get_locators_or_account('PlanSettingPageElements', 'planname')
 
-    def add_plan(self, planname):
-        """新增审方方案流程"""
-        self.click_addplan_btn()
-        self.input_planname(planname)
-        self.click_save_btn()
-
     def query_flow(self, planname):
         """查询审方方案流程"""
         self.search_plan(planname)
@@ -27,12 +21,30 @@ class PlanSettingPage(BasePage):
         database = self.get_database_data(planname)
         return listdict_compare(display, database)
 
+    def add_flow(self,planname):
+        self.add_plan(planname)
+        self.result(planname)  # 断言方案添加成功
+        self.search_plan(planname)
+
+
+    def modify_flow(self):
+        pass
+
+    def delete_flow(self):
+        pass
+
     def search_plan(self, planname):
         # 输入方案名称
         if planname is not None:
             self.send_keys('css selector', 'input.audit-setting-search-input', planname)
         # 点击搜索
         self.click('css selector', '.ip-btn>span:nth-of-type(2)')
+
+    def add_plan(self, planname):
+        """新增审方方案流程"""
+        self.click_addplan_btn()
+        self.input_planname(planname)
+        self.click_save_btn()
 
     def get_display_data(self):
         """获取页面的查询出的审方方案数据"""
@@ -43,7 +55,7 @@ class PlanSettingPage(BasePage):
             rows = len(self.find_elements('css selector', 'tbody>tr')) - 1
             for j in range(rows):
                 j += 1
-                ss = self.find_elements('css selector', 'tbody>tr:nth-of-type({}) td'.format(j+1))
+                ss = self.find_elements('css selector', 'tbody>tr:nth-of-type({}) td'.format(j + 1))
                 data_dict['name'] = ss[0].text
                 data_dict['category'] = ss[1].text
                 data_dict['user_name'] = ss[2].text
@@ -60,7 +72,7 @@ class PlanSettingPage(BasePage):
         plan_name = 'and name like "%%%s%%"'  # SELECT name, category,user_name,created_time,modified_time
         sql = 'SELECT name, category,user_name FROM `sf_audit_plan` where 1 = 1 '
         if planname is not None:
-            sql = (sql +plan_name)%planname
+            sql = (sql + plan_name) % planname
         cur.execute(sql)
         print(sql)
         database_data = cur.fetchall()
